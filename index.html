@@ -1,0 +1,91 @@
+<html>
+<head>
+
+
+</head>
+<body>
+  <div id="root"></div>
+  
+
+  <form onsubmit="handleAddTodoItem(event)">
+    <input type="checkbox" id="todoItemCheck2" >
+    <input id="newTodoItemText" type="text" placeholder="What you want to do?">
+    <button >Add todo item</button>
+  </form>
+
+
+<script>
+
+const defaultTodoItems = [
+  { id: 1, text: 'Начистить картошку', isDone: false },
+  { id: 2, text: 'Купить вино', isDone: false },
+  { id: 3, text: 'Помыть посуду', isDone: true },
+]
+const defaultData = {
+  todoItems: defaultTodoItems,
+  userName: 'Dmitry'
+}
+
+const loadData = () => {
+  return localStorage.data ? JSON.parse(localStorage.data) : defaultData
+}
+
+const saveData = () => {
+  return localStorage.data = JSON.stringify(data) 
+}
+
+const data = loadData()
+console.debug("Debugging data is undefined", {data})
+
+
+const handleAddTodoItem = (event) => {
+  event.preventDefault()
+  
+  console.log("handleAddTodoItem", {event})
+  const input = document.getElementById('newTodoItemText')
+  const newTodoItemText = input.value
+  const newTodoItem = {
+    id: data.todoItems.length + 1,
+    text: newTodoItemText,
+    isDone: false
+  }
+  data.todoItems.push(newTodoItem)
+  input.value = ''
+  saveData()
+  render()  
+}
+
+const handleTodoItemCheck = (event, todoItemId) => {
+  console.log("handleTodoItemCheck", {event, todoItemId})
+  const todoItemIndex = data.todoItems.findIndex((todoItem) => todoItem.id === todoItemId)
+  data.todoItems[todoItemIndex].isDone = event.target.checked
+  saveData()
+}
+
+const renderTodoItem = (todoItem) => {
+ return `
+      <div>
+        <input type="checkbox" id="todoItemCheck${todoItem.id}" 
+          onclick="handleTodoItemCheck(event, ${todoItem.id})"
+          ${todoItem.isDone ? "checked": ""}">
+        <label for="todoItemCheck${todoItem.id}">${todoItem.text}</label>
+      </div>
+    `
+}
+
+const renderTodoItemList = (todoItemsInFunc) => {
+  return todoItemsInFunc.map(renderTodoItem).join('')
+}
+
+const render = () => {
+  document.getElementById('root').innerHTML = `
+    <h1>Todo List</h1>
+    <h2>${data.userName}</h2>
+    ${renderTodoItemList(data.todoItems)}
+  `
+}
+render()
+
+</script>
+</body>
+</html>
