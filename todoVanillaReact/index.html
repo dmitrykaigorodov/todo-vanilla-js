@@ -1,0 +1,122 @@
+<html>
+<head>
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+  <style>
+    input:checked + span {
+        text-decoration: line-through;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="reactRoot"></div>
+
+<script type="text/babel">
+
+const defaultTodoList = [
+  { id: 1, text: 'Начистить картошку', isDone: false },
+  { id: 2, text: 'Купить вино', isDone: false },
+  { id: 3, text: 'Помыть посуду', isDone: true },
+]
+const defaultData = {
+  todoList: defaultTodoList,
+  userName: 'Dmitry'
+}
+
+const loadData = () => {
+  const data = localStorage.data ? JSON.parse(localStorage.data) : defaultData
+  if(data.todoItems) {
+    data.todoList = data.todoItems
+    delete data.todoItems
+  }
+  return data
+}
+
+const saveData = (data) => {
+  return localStorage.data = JSON.stringify(data) 
+}
+
+const AddNewTodoItemForm = ({handleAddTodoItem}) => {
+  const [todoItemText, setTodoItemText] = React.useState('')
+
+  const handleFormSubmit = (event) => {
+    event.preventDefault()
+    handleAddTodoItem(todoItemText)
+    setTodoItemText('')
+  }
+
+  return <form onSubmit={event => handleFormSubmit(event)}>
+    <input type="checkbox" />
+    <input placeholder="What you want to do?"
+      value={todoItemText}
+      onChange={event => setTodoItemText(event.target.value)}
+    />
+    <button >Add todo item</button>
+  </form>
+}
+
+
+const TodoItem = ({todoItem, handleTodoItemCheck}) => {
+  const onCheckboxClick = (event, todoItemId) => {
+    handleTodoItemCheck(todoItem.id)
+  }
+
+  return <div>
+    <label>
+      <input type="checkbox"  
+        onChange={event => onCheckboxClick(event)}
+        checked={todoItem.isDone} />
+      <span>{todoItem.text}</span>
+    </label>
+  </div>
+}
+
+const TodoItemList = ({todoList, handleTodoItemCheck}) => {
+  return todoList.map((todoItem) => 
+    <TodoItem key={todoItem.id} todoItem={todoItem} handleTodoItemCheck={handleTodoItemCheck}/>
+  )
+}
+
+const TodoListApp = ({userName, initTodoList}) => {
+  const [todoList, setTodoList] = React.useState(initTodoList)
+
+  const handleTodoItemCheck = (todoItemId) => {
+    const todoItemIndex = todoList.findIndex((todoItem) => todoItem.id === todoItemId)
+    const newTodoList = [...todoList]
+    newTodoList[todoItemIndex].isDone = !todoList[todoItemIndex].isDone
+    setTodoList(newTodoList)
+    saveData({todoList: newTodoList})    
+  }
+
+  const handleAddTodoItem = (newTodoItemText) => {
+    const newTodoItem = {
+      id: todoList.length + 1,
+      text: newTodoItemText,
+      isDone: false
+    }
+    const newTodoList = [...todoList, newTodoItem]
+    setTodoList(newTodoList)
+    saveData({todoList: newTodoList})    
+  }
+
+  return <div>
+    <h1>Todo List</h1>
+    <h2>{userName}</h2>
+    <TodoItemList todoList={todoList} handleTodoItemCheck={handleTodoItemCheck}/>
+    <AddNewTodoItemForm handleAddTodoItem={handleAddTodoItem}/>
+  </div>
+}
+
+const container = document.getElementById('reactRoot');
+const root = ReactDOM.createRoot(container);
+root.render(<TodoListApp userName={'Dmitry'} initTodoList={loadData().todoList} />);
+
+</script>
+
+</body>
+</html>
